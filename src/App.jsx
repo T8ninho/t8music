@@ -1,4 +1,4 @@
-import { collection, deleteDoc, getDocs, doc } from "firebase/firestore";
+import { collection, deleteDoc, getDocs, doc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db, storage } from './firebase/firebase';
 import AudioComp from "./Components/AudioComp";
@@ -26,23 +26,26 @@ export default function App() {
     setAudios(Item => [...Item, ...NovoItem]);
   };
 
-  const Favoritar = async (audio) => {
-    const audioRef = doc(db, dbName, audio.id);
-    const newFavoriteStatus = !audio.favorite;
-    await updateDoc(audioRef, { favorite: newFavoriteStatus });
-    const updatedAudio = { ...audio, favorite: newFavoriteStatus };
-  
-    setAudios(prevAudios =>
-      prevAudios.map(a => a.id === audio.id ? updatedAudio : a)
-    );
-  
-    if (newFavoriteStatus) {
-      setFavoritos(prevFavorites => [...prevFavorites, updatedAudio]);
+  const Favoritar = async (id, isFavorite) => {
+    // Atualiza o estado de favorite no Firestore
+    const audioDoc = doc(db, dbName, id);
+    await updateDoc(audioDoc, {
+      favorite: !isFavorite
+    });
+
+    // Atualiza os estados locais dos áudios
+    if (isFavorite) {
+      // Se o áudio era favorito e agora não é mais
+      setFavoritos(favoritos => favoritos.filter(audio => audio.id !== id));
+      const audio = favoritos.find(audio => audio.id === id);
+      setAudios(audios => [...audios, { ...audio, favorite: !isFavorite }]);
     } else {
-      setFavoritos(prevFavorites => prevFavorites.filter(fav => fav.id !== audio.id));
+      // Se o áudio não era favorito e agora é
+      setAudios(audios => audios.filter(audio => audio.id !== id));
+      const audio = audios.find(audio => audio.id === id);
+      setFavoritos(favoritos => [...favoritos, { ...audio, favorite: !isFavorite }]);
     }
   };
-  
 
   const ExcluirAudio = async (id, fileName) => {
     // Exclui o documento do Firestore
@@ -65,11 +68,21 @@ export default function App() {
       <UploadAudio enviando={EnviarAudio} dbName={dbName}/>
       <div>
         <h1>Lista de audios:</h1>
-        <AudioComp audio={audios} onPlay={item => setPlay(item)} onDelete={ExcluirAudio} onFavorite={Favoritar}/>
+        <AudioComp 
+          audio={audios} 
+          onPlay={item => setPlay(item)} 
+          onDelete={ExcluirAudio} 
+          onFavorite={id => Favoritar(id, false)} // Passa false porque são os não favoritos
+        />
       </div>
       <div>
         <h1>Favoritos:</h1>
-        <AudioComp audio={favoritos} onPlay={item => setPlay(item)} onDelete={ExcluirAudio}  onFavorite={Favoritar}/>
+        <AudioComp 
+          audio={favoritos} 
+          onPlay={item => setPlay(item)} 
+          onDelete={ExcluirAudio}  
+          onFavorite={id => Favoritar(id, true)} // Passa true porque são os favoritos
+        />
       </div>
       {play && <audio controls src={play.url} autoPlay />}
     </div>
