@@ -1,14 +1,16 @@
 import { collection, deleteDoc, getDocs, doc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db, storage } from './firebase/firebase';
-import AudioComp from "./Components/AudioComp";
-import UploadAudio from "./Components/UploadAudio";
+import MusicItem from "./Components/MusicItem";
+import UploadMusic from "./Components/UploadMusic";
 import { deleteObject, ref } from "firebase/storage";
+import PlayerMusic from "./Components/PlayerMusic";
 
 export default function App() {
+  const [carregado, setCarregado] = useState(false);
   const [audios, setAudios] = useState([]);
   const [favoritos, setFavoritos] = useState([]);
-  const [play, setPlay] = useState(null);
+  const [play, setPlay] = useState([]);
 
   const dbName = 'audios';
 
@@ -20,7 +22,8 @@ export default function App() {
       setFavoritos(AudioList.filter(audio => audio.favorite));
     };
     ReceberAudios();
-  }, []);
+    setCarregado(true)
+  }, [carregado]);
 
   const EnviarAudio = (NovoItem) => {
     setAudios(Item => [...Item, ...NovoItem]);
@@ -59,16 +62,16 @@ export default function App() {
     setAudios(audios => audios.filter(audio => audio.id !== id));
     setFavoritos(favoritos => favoritos.filter(audio => audio.id !== id));
     if (play && play.id === id) {
-      setPlay(null);
+      setPlay([]);
     }
   };
 
   return (
     <div className="App">
-      <UploadAudio enviando={EnviarAudio} dbName={dbName}/>
+      <UploadMusic enviando={EnviarAudio} dbName={dbName}/>
       <div>
         <h1>Lista de audios:</h1>
-        <AudioComp 
+        <MusicItem 
           audio={audios} 
           onPlay={item => setPlay(item)} 
           onDelete={ExcluirAudio} 
@@ -77,14 +80,15 @@ export default function App() {
       </div>
       <div>
         <h1>Favoritos:</h1>
-        <AudioComp 
+        <MusicItem 
           audio={favoritos} 
           onPlay={item => setPlay(item)} 
           onDelete={ExcluirAudio}  
           onFavorite={id => Favoritar(id, true)} // Passa true porque são os favoritos
         />
       </div>
-      {play && <audio controls src={play.url} autoPlay />}
+      <PlayerMusic musica={play} />
+      {/* {play && <audio controls src={play.url} autoPlay />} */}
     </div>
   );
 }

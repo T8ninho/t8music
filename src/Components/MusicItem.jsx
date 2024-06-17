@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 import { GoHeart, GoHeartFill, GoTrash, GoUnmute } from "react-icons/go";
 
-export default function AudioComp ({audio, onPlay, onDelete, onFavorite}) {
+export default function MusicItem ({audio, onPlay, onDelete, onFavorite}) {
 
 	const SVG = ({src}) => {
 		return(

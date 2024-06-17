@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
-import { storage, db } from './firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
+import { storage, db } from '../firebase/firebase';
+import { GoUpload } from "react-icons/go";
 
-const UploadAudio = ({ onUpload }) => {
+const UploadMusic = ({ enviando, dbName }) => {
   const [audios, setAudios] = useState([]);
 
   const handleUpload = async () => {
     const uploadedAudios = [];
     for (const audio of audios) {
-      const audioRef = ref(storage, `audios/${audio.name}`);
+      const audioRef = ref(storage, `${dbName}/${audio.name}`);
       await uploadBytes(audioRef, audio);
       const url = await getDownloadURL(audioRef);
-      const audioData = { name: audio.name, url, favorite: false };
-      const docRef = await addDoc(collection(db, 'audios'), audioData);
+
+      const dataAtual = new Date(); // Pega  a data e hora atual
+
+      const audioData = { 
+        name: audio.name, 
+        url, 
+        favorite: false,
+        date: dataAtual
+      };
+
+      const docRef = await addDoc(collection(db, dbName), audioData);
       uploadedAudios.push({ ...audioData, id: docRef.id });
     }
-    onUpload(uploadedAudios);
+    enviando(uploadedAudios);
   };
 
   return (
@@ -27,9 +37,11 @@ const UploadAudio = ({ onUpload }) => {
         multiple 
         onChange={(e) => setAudios([...e.target.files])} 
       />
-      <button onClick={handleUpload}>Upload</button>
+      <button onClick={handleUpload}>
+        <GoUpload />
+      </button>
     </div>
   );
 };
 
-export default UploadAudio;
+export default UploadMusic;
