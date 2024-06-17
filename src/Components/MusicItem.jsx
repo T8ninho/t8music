@@ -3,13 +3,6 @@ import { Fragment } from "react";
 import { GoHeart, GoHeartFill, GoTrash, GoUnmute } from "react-icons/go";
 
 export default function MusicItem ({audio, onPlay, onDelete, onFavorite}) {
-
-	const SVG = ({src}) => {
-		return(
-			<img src={src} alt="Icone de favorito" width="20" height="20" />
-		)
-	}
-
 	return(
 		audio.map((item) => (
 			<Fragment key={item.key}>

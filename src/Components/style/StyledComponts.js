@@ -1,5 +1,10 @@
 import styled from "styled-components";
 
-// export const Player = styled.audio`
-// 	accent-color: '#00ff00';
-// `;
+export const Upload = styled.div`
+	display: flex;
+	flex-direction: column;
+
+	button {
+		font-size: 2em;
+	};
+`;
