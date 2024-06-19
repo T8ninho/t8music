@@ -10,39 +10,60 @@ const UploadMusic = ({ enviando, dbName }) => {
   const [musicName, setMusicName] = useState('');
   const [playlist, setPlaylist] = useState('');
   const [autor, setAutor] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleUpload = async () => {
-    const uploadedAudios = [];
     if(musicName === '' || autor === '' || playlist === '') {
-      return
+      setError('Todos os campos devem ser preenchidos!');
+      return;
     }
-    for (const audio of audios) {
-      const audioRef = ref(storage, `${dbName}/${musicName}`);
-      await uploadBytes(audioRef, audio);
-      const url = await getDownloadURL(audioRef);
-
-      const dataAtual = new Date(); // Pega a data e hora atual
-
-      const audioData = { 
-        name: musicName, 
-        url, 
-        favorite: false,
-        date: dataAtual,
-        autor: autor,
-        playlist: playlist
-      };
-
-      const docRef = await addDoc(collection(db, dbName), audioData);
-      uploadedAudios.push({ ...audioData, id: docRef.id });
+    if (audios.length === 0) {
+      setError('Selecione pelo menos um arquivo de áudio!');
+      return;
     }
-    enviando(uploadedAudios);
-    setMusicName('')
-    setAutor('')
-    setPlaylist('')
+
+    setLoading(true);
+    setError('');
+    const uploadedAudios = [];
+
+    try {
+      for (const audio of audios) {
+        const audioRef = ref(storage, `${dbName}/${musicName}`);
+        await uploadBytes(audioRef, audio);
+        const url = await getDownloadURL(audioRef);
+
+        const dataAtual = new Date();
+
+        const audioData = { 
+          name: musicName, 
+          url, 
+          favorite: false,
+          date: dataAtual,
+          autor: autor,
+          playlist: playlist
+        };
+
+        // Adiciona o documento na coleção do Firestore
+        const docRef = await addDoc(collection(db, dbName), audioData);
+        uploadedAudios.push({ ...audioData, id: docRef.id });
+      }
+      enviando(uploadedAudios);
+      setMusicName('');
+      setAutor('');
+      setPlaylist('');
+      setAudios([]);
+    } catch (e) {
+      setError('Ocorreu um erro ao fazer upload dos arquivos. Tente novamente.');
+      console.error("Error uploading audio: ", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Upload>
+      {error && <p style={{color: 'red'}}>{error}</p>}
       <input 
         type="file" 
         accept="audio/*" 
@@ -71,8 +92,9 @@ const UploadMusic = ({ enviando, dbName }) => {
         onChange={(e) => setPlaylist(e.target.value)} 
         required
       />
-      <button onClick={handleUpload}>
+      <button onClick={handleUpload} disabled={loading}>
         <GoUpload />
+        {loading ? ' Enviando...' : ' Enviar'}
       </button>
     </Upload>
   );

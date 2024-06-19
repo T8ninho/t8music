@@ -1,15 +1,21 @@
 import { collection, deleteDoc, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db, storage } from '../firebase/firebase';
-import MusicItem from "../Components/MusicItem";
-import UploadMusic from "../Components/UploadMusic";
+import { db, storage } from '../../firebase/firebase';
+import MusicItem from "../../Components/MusicItem";
+import UploadMusic from "../../Components/UploadMusic";
 import { deleteObject, ref } from "firebase/storage";
-import PlayerMusic from "../Components/PlayerMusic";
+import PlayerMusic from "../../Components/PlayerMusic";
 
 export default function Inicio() {
   const [carregado, setCarregado] = useState(false);
   const [audios, setAudios] = useState([]);
   const [play, setPlay] = useState([]);
+
+  const [selectedAuthor, setSelectedAuthor] = useState(null);
+
+  const handleSelectAuthor = (author) => {
+    setSelectedAuthor(author);
+  };
 
   const dbName = 'audios';
 
