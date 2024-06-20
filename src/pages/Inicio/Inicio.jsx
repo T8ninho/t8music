@@ -31,14 +31,14 @@ export default function Inicio() {
 
   const EnviarAudio = (NovoItem) => {
     setAudios(Item => [...Item, ...NovoItem]);
-    setCarregado(false)
+    setCarregado(false) 
   };
 
   const Favoritar = async (item) => {
     const audioDocRef = doc(db, dbName, item);
     const { favorite } = (await getDoc(audioDocRef)).data();
     await updateDoc(audioDocRef, { favorite: !favorite });
-    setCarregado(false);
+    setCarregado(false); 
   };
 
   const ExcluirAudio = async (id, fileName) => {

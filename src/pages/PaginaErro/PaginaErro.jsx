@@ -4,7 +4,6 @@ import { Linha, Laranja, Codigo, Verde, Roxo, Azul, Amarelo } from "../../Compon
 export default function PaginaErro() {
   const error = useRouteError();
   console.error(error);
-  // alert("sinto muito")
 
   return (
     <div style={{ textAlign: 'center' }}>
